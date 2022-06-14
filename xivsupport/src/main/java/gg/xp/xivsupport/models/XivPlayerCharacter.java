@@ -10,6 +10,8 @@ public class XivPlayerCharacter extends XivCombatant {
 	private static final long serialVersionUID = 8719229961190925919L;
 	private final Job job;
 	private final XivWorld world;
+	private final String firstName;
+	private final String lastName;
 
 	public XivPlayerCharacter(long id,
 	                          String name,
@@ -29,6 +31,15 @@ public class XivPlayerCharacter extends XivCombatant {
 		super(id, name, true, isLocalPlayerCharacter, typeRaw, hp, mp, pos, bNpcId, bNpcNameId, partyType, level, ownerId, shieldAmount);
 		this.job = job;
 		this.world = world;
+		String[] split = name.split("\\s+");
+		if (split.length == 2) {
+			this.firstName = split[0];
+			this.lastName = split[1];
+		}
+		else {
+			this.firstName = "";
+			this.lastName = "";
+		}
 	}
 
 	public Job getJob() {
