@@ -69,7 +69,7 @@ public class Dragonsong extends AutoChildEventHandler implements FilteredEventHa
 	private final ModifiableCallout<AbilityCastStart> p1_holiestOfHoly = ModifiableCallout.durationBasedCall("Holiest of Holy", "Raidwide");
 	private final ModifiableCallout<AbilityCastStart> p1_emptyDimension = ModifiableCallout.durationBasedCall("Empty Dimension", "In");
 	private final ModifiableCallout<AbilityCastStart> p1_fullDimension = ModifiableCallout.durationBasedCall("Empty Dimension", "Out");
-	private final ModifiableCallout<AbilityCastStart> p1_heavensblaze = ModifiableCallout.durationBasedCall("Heavensblaze", "Stack on {event.target.firstName}");
+	private final ModifiableCallout<AbilityCastStart> p1_heavensblaze = ModifiableCallout.durationBasedCall("Heavensblaze", "Stack on {event.target}");
 	private final ModifiableCallout<AbilityCastStart> p1_holiestHallowing = ModifiableCallout.durationBasedCall("Holiest Hallowing", "Interrupt {event.source}");
 	private final ModifiableCallout<BuffApplied> p1_brightwing = ModifiableCallout.durationBasedCall("Brightwing", "Pair Cleaves");
 
@@ -78,10 +78,10 @@ public class Dragonsong extends AutoChildEventHandler implements FilteredEventHa
 	private final ModifiableCallout<BuffApplied> p1_puddleBait = ModifiableCallout.<BuffApplied>durationBasedCall("Puddle (Place)", "Puddle on you").autoIcon();
 	private final ModifiableCallout<BuffRemoved> p1_puddleBaitAfter = new ModifiableCallout<BuffRemoved>("Puddle (Move)", "Move").autoIcon();
 
-	private final ModifiableCallout<HeadMarkerEvent> circle = new ModifiableCallout<>("Circle", "Red Circle with {partner.firstName}");
-	private final ModifiableCallout<HeadMarkerEvent> triangle = new ModifiableCallout<>("Triangle", "Green Triangle with {partner.firstName}");
-	private final ModifiableCallout<HeadMarkerEvent> square = new ModifiableCallout<>("Square", "Purple Square with {partner.firstName}");
-	private final ModifiableCallout<HeadMarkerEvent> cross = new ModifiableCallout<>("Cross", "Blue Cross with {partner.firstName}");
+	private final ModifiableCallout<HeadMarkerEvent> circle = new ModifiableCallout<>("Circle", "Red Circle with {partner}");
+	private final ModifiableCallout<HeadMarkerEvent> triangle = new ModifiableCallout<>("Triangle", "Green Triangle with {partner}");
+	private final ModifiableCallout<HeadMarkerEvent> square = new ModifiableCallout<>("Square", "Purple Square with {partner}");
+	private final ModifiableCallout<HeadMarkerEvent> cross = new ModifiableCallout<>("Cross", "Blue Cross with {partner}");
 
 	// Thordan
 	private final ModifiableCallout<AbilityCastStart> thordan_cleaveBait = ModifiableCallout.durationBasedCall("Ascalon's Mercy", "Cleave Bait");
@@ -92,19 +92,20 @@ public class Dragonsong extends AutoChildEventHandler implements FilteredEventHa
 	private final ModifiableCallout<?> ewSafe = new ModifiableCallout<>("Trio 1 E/W Safe", "East/West Safe", "East West Safe");
 	private final ModifiableCallout<?> seNwSafe = new ModifiableCallout<>("Trio 1 SE/NW Safe", "Southeast/Northwest Safe", "Southeast Northwest Safe");
 
+	private final ModifiableCallout<AbilityCastStart> thordan_heavenlyHeel = ModifiableCallout.durationBasedCall("Heavenly Heel", "Buster on {event.target}, then 3 hits");
 
 	private final ModifiableCallout<?> thordan_trio1_nothing = new ModifiableCallout<>("First Trio: Nothing", "Nothing");
 	private final ModifiableCallout<HeadMarkerEvent> thordan_trio1_blueMarker = new ModifiableCallout<>("First Trio: Blue Marker", "Blue Marker");
 	private final ModifiableCallout<?> thordan_trio1_tank = new ModifiableCallout<>("First Trio: Tank", "Take Tether");
 	private final ModifiableCallout<?> thordan_trio1_wheresThordan = new ModifiableCallout<>("First Trio: Where is Thordan", "Thordan {wheresThordan}");
 
-	private final ModifiableCallout<?> thordan_trio2_swordMark = new ModifiableCallout<>("Second Trio: Swords", "{sword1.firstName} and {sword2.firstName}");
+	private final ModifiableCallout<?> thordan_trio2_swordMark = new ModifiableCallout<>("Second Trio: Swords", "{sword1} and {sword2}");
 	private final ModifiableCallout<AbilityCastStart> thordan_trio2_gaze = ModifiableCallout.durationBasedCall("Second Trio: Gaze", "Look away");
 	private final ModifiableCallout<?> thordan_trio2_cw = new ModifiableCallout<>("Second Trio: Clockwise", "Clockwise");
 	private final ModifiableCallout<?> thordan_trio2_ccw = new ModifiableCallout<>("Second Trio: Counter-clockwise", "Counterclockwise");
 
 	private final ModifiableCallout<?> thordan_trio2_meteorMark = new ModifiableCallout<>("Second Trio: Meteors", "Meteor on you").autoIcon();
-	private final ModifiableCallout<?> thordan_trio2_meteorRoleMark = new ModifiableCallout<>("Second Trio: Meteors", "Meteor role {meteor1.firstName} and {meteor2.firstName}");
+	private final ModifiableCallout<?> thordan_trio2_meteorRoleMark = new ModifiableCallout<>("Second Trio: Meteors", "Meteor role {meteor1} and {meteor2}");
 	private final ModifiableCallout<?> thordan_trio2_nonMeteorRole = new ModifiableCallout<>("Second Trio: Meteors", "Non-meteor role");
 
 	private final ModifiableCallout<?> thordan_trio2_firstTower = new ModifiableCallout<>("Second Trio: Tower 1", "Soak First Tower");
@@ -261,6 +262,7 @@ public class Dragonsong extends AutoChildEventHandler implements FilteredEventHa
 			case 0x63C6 -> call = thordan_quaga;
 			case 0x63C1 -> call = thordan_broadSwingL;
 			case 0x63C0 -> call = thordan_broadSwingR;
+			case 0x63C7 -> call = thordan_heavenlyHeel;
 			case 0x63D0 -> call = thordan_trio2_gaze;
 			case 0x670B -> call = estinhog_drachenlance;
 			// TODO: what should this call actually be?
@@ -559,12 +561,12 @@ public class Dragonsong extends AutoChildEventHandler implements FilteredEventHa
 						.skip(1)
 						.findFirst()
 						.orElse(null);
+				List<XivCombatant> meteors = marks.stream().map(BuffApplied::getTarget).toList();
+				Map<String, Object> params = Map.of("meteors", meteors);
 				switch (yourRole) {
-					case METEOR_ON_YOU -> s.accept(thordan_trio2_meteorMark.getModified());
-					case METEOR_ON_ROLE -> s.accept(thordan_trio2_meteorRoleMark.getModified(Map.of(
-							"meteor1", meteor1 == null ? "?" : meteor1,
-							"meteor2", meteor2 == null ? "?" : meteor2)));
-					case NO_METEOR -> s.accept(thordan_trio2_nonMeteorRole.getModified());
+					case METEOR_ON_YOU -> s.accept(thordan_trio2_meteorMark.getModified(params));
+					case METEOR_ON_ROLE -> s.accept(thordan_trio2_meteorRoleMark.getModified(params));
+					case NO_METEOR -> s.accept(thordan_trio2_nonMeteorRole.getModified(params));
 				}
 				s.waitEvent(BuffApplied.class, ba -> ba.getBuff().getId() == 0xB57);
 				s.accept(thordan_trio2_firstTower.getModified());
