@@ -7,8 +7,10 @@ import gg.xp.reevent.scan.AutoFeed;
 import gg.xp.reevent.scan.FilteredEventHandler;
 import gg.xp.reevent.scan.HandleEvents;
 import gg.xp.xivdata.data.Job;
+import gg.xp.xivdata.data.duties.KnownDuty;
 import gg.xp.xivsupport.callouts.CalloutRepo;
 import gg.xp.xivsupport.callouts.ModifiableCallout;
+import gg.xp.xivsupport.callouts.RawModifiedCallout;
 import gg.xp.xivsupport.events.actlines.events.AbilityCastStart;
 import gg.xp.xivsupport.events.actlines.events.AbilityUsedEvent;
 import gg.xp.xivsupport.events.actlines.events.BuffApplied;
@@ -34,9 +36,7 @@ import gg.xp.xivsupport.models.XivCombatant;
 import gg.xp.xivsupport.models.XivPlayerCharacter;
 import gg.xp.xivsupport.persistence.PersistenceProvider;
 import gg.xp.xivsupport.persistence.settings.BooleanSetting;
-import gg.xp.xivsupport.persistence.settings.EnumListSetting;
 import gg.xp.xivsupport.persistence.settings.JobSortSetting;
-import gg.xp.xivsupport.speech.CalloutEvent;
 import org.apache.commons.lang3.mutable.MutableInt;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
@@ -58,7 +58,7 @@ import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
-@CalloutRepo("Dragonsong's Reprise")
+@CalloutRepo(name = "Dragonsong's Reprise", duty = KnownDuty.Dragonsong)
 public class Dragonsong extends AutoChildEventHandler implements FilteredEventHandler {
 
 	private static final Logger log = LoggerFactory.getLogger(Dragonsong.class);
@@ -771,7 +771,7 @@ public class Dragonsong extends AutoChildEventHandler implements FilteredEventHa
 		// 6715 -> the actual out (gnash)
 		// 6716 -> the actual in (lash)
 		boolean outFirst = e1.getAbility().getId() == 0x6712;
-		CalloutEvent firstCall = outFirst ? estinhog_gnash.getModified() : estinhog_lash.getModified();
+		RawModifiedCallout<?> firstCall = outFirst ? estinhog_gnash.getModified() : estinhog_lash.getModified();
 		s.updateCall(firstCall);
 		s.waitEvent(AbilityUsedEvent.class, aue -> aue.isFirstTarget() && (aue.getAbility().getId() == 0x6715 || aue.getAbility().getId() == 0x6716));
 		s.updateCall(!outFirst ? estinhog_gnash.getModified() : estinhog_lash.getModified());
@@ -787,12 +787,12 @@ public class Dragonsong extends AutoChildEventHandler implements FilteredEventHa
 		}
 	}
 
-	private CalloutEvent previousRedBlueCall;
+	private RawModifiedCallout previousRedBlueCall;
 
 	@HandleEvents
 	public void doRedBlueTethers(EventContext ctx, BuffApplied ba) {
 		if (ba.getTarget().isThePlayer()) {
-			CalloutEvent call;
+			RawModifiedCallout call;
 			long id = ba.getBuff().getId();
 			if (id == 0xAD7) {
 				call = redTether.getModified(ba);
